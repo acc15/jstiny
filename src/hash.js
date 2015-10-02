@@ -14,7 +14,7 @@
         return current;
     };
 
-    function hash(array, fn, opts) {
+    jstiny.hash = function(array, fn, opts) {
     	var target;
 
         opts = opts || {};
@@ -33,6 +33,6 @@
             }
         });
         return target;
-    }
+    };
 
 })(jstiny);
