@@ -19,6 +19,10 @@
         return (typeof length === "number") && (length === 0 || ((length - 1) in obj));
     };
 
+    jstiny.isDate = function(obj) {
+        return obj instanceof Date && !isNaN(obj.valueOf());
+    };
+
     jstiny.isString = function(obj) {
         return typeof obj === "string";
     };

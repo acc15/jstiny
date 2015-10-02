@@ -262,6 +262,10 @@ if (window.angular) {
         return (typeof length === "number") && (length === 0 || ((length - 1) in obj));
     };
 
+    jstiny.isDate = function(obj) {
+        return obj instanceof Date && !isNaN(obj.valueOf());
+    };
+
     jstiny.isString = function(obj) {
         return typeof obj === "string";
     };
@@ -336,19 +340,21 @@ if (window.angular) {
     };
 
 
-    function addPair(key, value, pairs, allowNulls) {
+    function addPair(key, value, pairs, opts) {
         var pair = encodeURIComponent(key);
         if (value != null) {
+            if (jstiny.isDate(value) && opts != null && jstiny.isFunction(opts.dateFormat)) {
+                value = opts.dateFormat(value);
+            }
             pair += "=" + encodeURIComponent(value);
-        } else if (!allowNulls) {
+        } else if (opts == null || !opts.nulls) {
             return;
         }
         pairs.push(pair);
     }
-    
+
     UrlBuilder.prototype.get = function(opts) {
         var keys = Object.keys(this.values),
-            allowNulls = opts && opts.nulls,
             key, value, i, j, pairs = [];
 
         keys.sort();
@@ -357,10 +363,10 @@ if (window.angular) {
             value = this.values[key];
             if (jstiny.isArrayLike(value)) {
                 for (j=0; j<value.length; j++) {
-                    addPair(key, value[j], pairs, allowNulls);
+                    addPair(key, value[j], pairs, opts);
                 }
             } else {
-                addPair(key, value, pairs, allowNulls);
+                addPair(key, value, pairs, opts);
             }
         }
         return pairs.length > 0 ? this.path + "?" + pairs.join("&") : this.path;
