@@ -291,13 +291,6 @@ if (window.angular) {
         }
     }
 
-    UrlBuilder.queryParam = function(key, value) {
-        var result = encodeURIComponent(key);
-        if (value != null) {
-            result += "=" + encodeURIComponent(value);
-        }
-        return result;
-    };
     UrlBuilder.prototype.path = function(value) {
         if (value == null) {
             return this.path;
@@ -341,8 +334,21 @@ if (window.angular) {
         delete this.values[name];
         return this;
     };
-    UrlBuilder.prototype.get = function() {
+
+
+    function addPair(key, value, pairs, allowNulls) {
+        var pair = encodeURIComponent(key);
+        if (value != null) {
+            pair += "=" + encodeURIComponent(value);
+        } else if (!allowNulls) {
+            return;
+        }
+        pairs.push(pair);
+    }
+    
+    UrlBuilder.prototype.get = function(opts) {
         var keys = Object.keys(this.values),
+            allowNulls = opts && opts.nulls,
             key, value, i, j, pairs = [];
 
         keys.sort();
@@ -351,10 +357,10 @@ if (window.angular) {
             value = this.values[key];
             if (jstiny.isArrayLike(value)) {
                 for (j=0; j<value.length; j++) {
-                    pairs.push(UrlBuilder.queryParam(key, value[j]));
+                    addPair(key, value[j], pairs, allowNulls);
                 }
             } else {
-                pairs.push(UrlBuilder.queryParam(key, value));
+                addPair(key, value, pairs, allowNulls);
             }
         }
         return pairs.length > 0 ? this.path + "?" + pairs.join("&") : this.path;
