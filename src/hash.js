@@ -27,7 +27,7 @@
                 return;
             }
             if (opts.multiple) {
-                multihash(target, val, item);
+                jstiny.multihash(target, val, item);
             } else {
                 target[val] = item;
             }

@@ -184,7 +184,7 @@ if (window.angular) {
         return current;
     };
 
-    function hash(array, fn, opts) {
+    jstiny.hash = function(array, fn, opts) {
     	var target;
 
         opts = opts || {};
@@ -203,7 +203,7 @@ if (window.angular) {
             }
         });
         return target;
-    }
+    };
 
 })(jstiny);
 (function(jstiny) {
