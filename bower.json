@@ -1,28 +1,28 @@
 {
-  "name": "jstiny",
-  "version": "1.0.0",
-  "homepage": "https://github.com/acc15/jstiny",
-  "authors": [
-    "acc15 <vyacheslav.mayorov@gmail.com>"
-  ],
-  "description": "Simple JS utilities without any mandatory dependencies",
-  "main": "",
-  "moduleType": [
-    "node"
-  ],
-  "keywords": [
-    "jstiny",
-    "each",
-    "map",
-    "filter",
-    "url"
-  ],
-  "license": "MIT",
-  "ignore": [
-    "**/.*",
-    "node_modules",
-    "bower_components",
-    "test",
-    "tests"
-  ]
+    "name": "jstiny",
+    "version": "1.0.0",
+    "homepage": "https://github.com/acc15/jstiny",
+    "authors": [
+        "acc15 <vyacheslav.mayorov@gmail.com>"
+    ],
+    "description": "Simple JS utilities without any mandatory dependencies",
+    "main": "",
+    "moduleType": [
+        "node"
+    ],
+    "keywords": [
+        "jstiny",
+        "each",
+        "map",
+        "filter",
+        "url"
+    ],
+    "license": "MIT",
+    "ignore": [
+        "**/.*",
+        "node_modules",
+        "bower_components",
+        "test",
+        "tests"
+    ]
 }
