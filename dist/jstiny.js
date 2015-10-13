@@ -32,8 +32,8 @@ if (window.angular) {
     jstiny.each = function(array, fn, def) {
         var i, result;
         if (jstiny.isArrayLike(array)) {
-            
-        	i=0;
+
+            i=0;
             while (i < array.length) {
                 result = fn(array[i], i);
                 if (result === remove) {
