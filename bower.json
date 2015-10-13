@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "homepage": "https://github.com/acc15/jstiny",
     "authors": [
-        "acc15 <vyacheslav.mayorov@gmail.com>"
+        "Vyacheslav Mayorov <vyacheslav.mayorov@gmail.com>"
     ],
     "description": "Simple JS utilities without any mandatory dependencies",
     "main": [
