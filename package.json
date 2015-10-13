@@ -1,6 +1,7 @@
 {
     "name": "jstiny",
     "version": "0.1.0",
+    "license": "MIT",
     "author": {
         "name": "Vyacheslav Mayorov",
         "email": "vyacheslav.mayorov@gmail.com"
