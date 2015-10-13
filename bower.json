@@ -2,9 +2,10 @@
     "name": "jstiny",
     "version": "1.0.0",
     "homepage": "https://github.com/acc15/jstiny",
-    "authors": [
-        "Vyacheslav Mayorov <vyacheslav.mayorov@gmail.com>"
-    ],
+    "authors": [{
+        "name": "Vyacheslav Mayorov",
+        "email": "vyacheslav.mayorov@gmail.com"
+    }],
     "description": "Simple JS utilities without any mandatory dependencies",
     "main": [
         "src/jstiny.js"
