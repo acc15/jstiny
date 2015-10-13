@@ -7,9 +7,7 @@
     ],
     "description": "Simple JS utilities without any mandatory dependencies",
     "main": [
-        "./dist/jstiny.js",
-        "./dist/jstiny.min.js",
-        "./dist/jstiny.min.js.map"
+        "src/jstiny.js"
     ],
     "moduleType": [
         "globals"
