@@ -6,9 +6,13 @@
         "acc15 <vyacheslav.mayorov@gmail.com>"
     ],
     "description": "Simple JS utilities without any mandatory dependencies",
-    "main": "",
+    "main": [
+        "./dist/jstiny.js",
+        "./dist/jstiny.min.js",
+        "./dist/jstiny.min.js.map"
+    ],
     "moduleType": [
-        "node"
+        "globals"
     ],
     "keywords": [
         "jstiny",
