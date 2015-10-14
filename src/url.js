@@ -51,9 +51,13 @@
                 current = [ current ];
                 this.values[name] = current;
             }
-            jstiny.each(value, function(v) {
-                current.push(v);
-            });
+            if (value != null) {
+                jstiny.each(value, function(v) {
+                    current.push(v);
+                });
+            } else {
+                current.push(value);
+            }
         } else {
             this.values[name] = jstiny.copy(value);
         }
