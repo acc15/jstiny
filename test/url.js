@@ -44,6 +44,13 @@ describe("url", function() {
         expect(url.get()).toEqual("api/v1/report/abc?abc=xyz");
         expect(url.get({nulls:true})).toEqual("api/v1/report/abc?abc=xyz&abc");
     });
+    it("url should correctly append parameter with value", function() {
+        var url = jstiny.url("api/v1/report/abc").params({abc: undefined}).add("abc", 1);
+        expect(url.has("abc")).toBe(true);
+        expect(url.param("abc")).toEqual([undefined, 1]);
+        expect(url.get()).toEqual("api/v1/report/abc?abc=1");
+        expect(url.get({nulls:true})).toEqual("api/v1/report/abc?abc&abc=1");
+    });
 
 
     it("url should clear parameters if value is null", function() {
