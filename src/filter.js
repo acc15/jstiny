@@ -26,6 +26,9 @@
         }
         if (jstiny.isObject(filter)) {
             for (i in filter) {
+                if (!filter.hasOwnProperty(i)) {
+                    continue;
+                }
                 nestedValue = jstiny.evaluate(obj, i);
                 nestedFilter = filter[i];
                 if (!isFiltered(nestedFilter, nestedValue, i)) {
@@ -49,14 +52,17 @@
                 keep = !keep;
             }
             if (opts.modify) {
-                return keep ? true : jstiny.remove();
+                if (!keep) {
+                    jstiny.each.remove();
+                }
+                return;
             }
             if (!keep) {
-                return true;
+                return;
             }
             if (opts.single) {
                 result = obj;
-                return jstiny.stop();
+                return jstiny.each.stop();
             }
             result.push(obj);
         });

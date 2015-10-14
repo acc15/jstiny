@@ -19,17 +19,17 @@
     }
 
     UrlBuilder.prototype.path = function(value) {
-        if (value == null) {
+        if (value === undefined) {
             return this.path;
         }
         this.path = value;
         return this;
     };
     UrlBuilder.prototype.params = function(value) {
-        if (value == null) {
+        if (value === undefined) {
             return this.values;
         }
-        this.values = value;
+        jstiny.copy(value, this.values);
         return this;
     };
     UrlBuilder.prototype.has = function(name) {
@@ -39,21 +39,23 @@
         return name in this.values ? this.values[name] : undefined;
     };
     UrlBuilder.prototype.add = function(name, value) {
-        var current;
-        if (value === undefined) {
-            value = null;
+
+        var current, self = this;
+        if (jstiny.isObject(name)) {
+            jstiny.each(name, function(v,k) { self.add(k,v); });
+            return this;
         }
         if (name in this.values) {
             current = this.values[name];
             if (!jstiny.isArray(current)) {
-                current = [current];
+                current = [ current ];
                 this.values[name] = current;
             }
             jstiny.each(value, function(v) {
                 current.push(v);
             });
         } else {
-            this.values[name] = value;
+            this.values[name] = jstiny.copy(value);
         }
         return this;
     };
@@ -61,7 +63,6 @@
         delete this.values[name];
         return this;
     };
-
 
     function addPair(key, value, pairs, opts) {
         var pair = encodeURIComponent(key);

@@ -14,55 +14,113 @@ if (window.angular) {
 }
 
 (function(jstiny) {
-
-    var stop = { result: null }, remove = {};
-
-    jstiny.stop = function(result) {
-        stop.result = result;
-        return stop;
+	
+    jstiny.clear = function(v) {
+        if (jstiny.isArrayLike(v)) {
+            Array.prototype.splice.call(v, 0, v.length);
+        } else if (jstiny.isObject(v)) {
+            jstiny.each(v, function() { return jstiny.each.remove(); });
+        }
     };
-    jstiny.remove = function() {
-        return remove;
+
+    jstiny.copy = function(source, target) {
+        var k, v;
+
+        jstiny.clear(target);
+        if (jstiny.isArrayLike(source)) {
+            if (!jstiny.isArrayLike(target)) {
+                target = [];
+            }
+            jstiny.each(source, function(v) {
+                Array.prototype.push.call(target, v);
+            });
+            return target;
+        } else if (jstiny.isObject(source)) {
+            if (!jstiny.isObject(target)) {
+                target = {};
+            }
+            jstiny.each(source, function(v,k) {
+                target[k] = v;
+            });
+            return target;
+        }
+        return source;
+    };
+
+})(jstiny);
+(function(jstiny) {
+
+    var iteration = { 
+        removed: false, 
+        stopped: false, 
+        result: null 
     };
 
     jstiny.each = function(array, fn, def) {
-        var i, result;
+        var iter, index, result;
         if (jstiny.isArrayLike(array)) {
+            
+            iter = 0;
+            index = 0;
 
-            i=0;
-            while (i < array.length) {
-                result = fn(array[i], i);
-                if (result === remove) {
-                    Array.prototype.splice.call(array, i, 1);
-                    continue;
+            while (iter < array.length) {
+                fn(array[iter], index);
+                ++index;
+
+                if (iteration.removed) {
+                    iteration.removed = false;
+                    Array.prototype.splice.call(array, iter, 1);
+                } else {
+                    ++iter;
                 }
-                ++i;
-                if (result === stop) {
-                    return stop.result;
+                if (iteration.stopped) {
+                    iteration.stopped = false;
+                    break;
                 }
             }
 
         } else if (jstiny.isObject(array)) {
-            
-            for (i in array) {
-                result = fn(array[i], i);
-                if (result === remove) {
-                    delete array[i];
+            for (iter in array) {
+                if (!array.hasOwnProperty(iter)) {
+                    continue;
                 }
-                if (result === stop) {
-                    return stop.result;
+                fn(array[iter], iter);
+                if (iteration.removed) {
+                    iteration.removed = false;
+                    delete array[iter];
+                }
+                if (iteration.stopped) {
+                    iteration.stopped = false;
+                    break;
                 }
             }
-
         } else if (array != null) {
-            
-            result = fn(array);
-            if (result != null) {
-                return result;
-            }
-
+            fn(array);
         }
-        return def;
+
+        if (iteration.result !== undefined) {
+            result = iteration.result;
+            iteration.result = undefined;
+            return result;
+        } else {
+            return def;
+        }
+    };
+
+    jstiny.each.result = function(result) {
+        iteration.result = result;
+        return this;
+    };
+    jstiny.each.stop = function(result) {
+        iteration.stopped = true;
+        if (result !== undefined) {
+            iteration.result = result;
+        }
+        return this;
+    };
+    jstiny.each.remove = function() {
+        iteration.removed = true;
+        return this;
     };
 
 })(jstiny);
@@ -120,6 +178,9 @@ if (window.angular) {
         }
         if (jstiny.isObject(filter)) {
             for (i in filter) {
+                if (!filter.hasOwnProperty(i)) {
+                    continue;
+                }
                 nestedValue = jstiny.evaluate(obj, i);
                 nestedFilter = filter[i];
                 if (!isFiltered(nestedFilter, nestedValue, i)) {
@@ -143,14 +204,17 @@ if (window.angular) {
                 keep = !keep;
             }
             if (opts.modify) {
-                return keep ? true : jstiny.remove();
+                if (!keep) {
+                    jstiny.each.remove();
+                }
+                return;
             }
             if (!keep) {
-                return true;
+                return;
             }
             if (opts.single) {
                 result = obj;
-                return jstiny.stop();
+                return jstiny.each.stop();
             }
             result.push(obj);
         });
@@ -292,17 +356,17 @@ if (window.angular) {
     }
 
     UrlBuilder.prototype.path = function(value) {
-        if (value == null) {
+        if (value === undefined) {
             return this.path;
         }
         this.path = value;
         return this;
     };
     UrlBuilder.prototype.params = function(value) {
-        if (value == null) {
+        if (value === undefined) {
             return this.values;
         }
-        this.values = value;
+        jstiny.copy(value, this.values);
         return this;
     };
     UrlBuilder.prototype.has = function(name) {
@@ -312,21 +376,23 @@ if (window.angular) {
         return name in this.values ? this.values[name] : undefined;
     };
     UrlBuilder.prototype.add = function(name, value) {
-        var current;
-        if (value === undefined) {
-            value = null;
+
+        var current, self = this;
+        if (jstiny.isObject(name)) {
+            jstiny.each(name, function(v,k) { self.add(k,v); });
+            return this;
         }
         if (name in this.values) {
             current = this.values[name];
             if (!jstiny.isArray(current)) {
-                current = [current];
+                current = [ current ];
                 this.values[name] = current;
             }
             jstiny.each(value, function(v) {
                 current.push(v);
             });
         } else {
-            this.values[name] = value;
+            this.values[name] = jstiny.copy(value);
         }
         return this;
     };
@@ -334,7 +400,6 @@ if (window.angular) {
         delete this.values[name];
         return this;
     };
-
 
     function addPair(key, value, pairs, opts) {
         var pair = encodeURIComponent(key);

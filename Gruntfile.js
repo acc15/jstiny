@@ -27,7 +27,8 @@ module.exports = function(grunt) {
         jasmine: {
             src: '<%= src %>',
             options: {
-                specs: '<%= test %>'
+                specs: '<%= test %>',
+                keepRunner: true
             },
             minified: {
                 src: '<%= minified %>'

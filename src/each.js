@@ -1,53 +1,76 @@
 (function(jstiny) {
 
-    var stop = { result: null }, remove = {};
-
-    jstiny.stop = function(result) {
-        stop.result = result;
-        return stop;
-    };
-    jstiny.remove = function() {
-        return remove;
+    var iteration = { 
+        removed: false, 
+        stopped: false, 
+        result: null 
     };
 
     jstiny.each = function(array, fn, def) {
-        var i, result;
+        var iter, index, result;
         if (jstiny.isArrayLike(array)) {
+            
+            iter = 0;
+            index = 0;
 
-            i=0;
-            while (i < array.length) {
-                result = fn(array[i], i);
-                if (result === remove) {
-                    Array.prototype.splice.call(array, i, 1);
-                    continue;
+            while (iter < array.length) {
+                fn(array[iter], index);
+                ++index;
+
+                if (iteration.removed) {
+                    iteration.removed = false;
+                    Array.prototype.splice.call(array, iter, 1);
+                } else {
+                    ++iter;
                 }
-                ++i;
-                if (result === stop) {
-                    return stop.result;
+                if (iteration.stopped) {
+                    iteration.stopped = false;
+                    break;
                 }
             }
 
         } else if (jstiny.isObject(array)) {
-            
-            for (i in array) {
-                result = fn(array[i], i);
-                if (result === remove) {
-                    delete array[i];
+            for (iter in array) {
+                if (!array.hasOwnProperty(iter)) {
+                    continue;
                 }
-                if (result === stop) {
-                    return stop.result;
+                fn(array[iter], iter);
+                if (iteration.removed) {
+                    iteration.removed = false;
+                    delete array[iter];
+                }
+                if (iteration.stopped) {
+                    iteration.stopped = false;
+                    break;
                 }
             }
-
         } else if (array != null) {
-            
-            result = fn(array);
-            if (result != null) {
-                return result;
-            }
-
+            fn(array);
         }
-        return def;
+
+        if (iteration.result !== undefined) {
+            result = iteration.result;
+            iteration.result = undefined;
+            return result;
+        } else {
+            return def;
+        }
+    };
+
+    jstiny.each.result = function(result) {
+        iteration.result = result;
+        return this;
+    };
+    jstiny.each.stop = function(result) {
+        iteration.stopped = true;
+        if (result !== undefined) {
+            iteration.result = result;
+        }
+        return this;
+    };
+    jstiny.each.remove = function() {
+        iteration.removed = true;
+        return this;
     };
 
 })(jstiny);
