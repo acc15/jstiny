@@ -19,7 +19,7 @@ describe("each", function() {
         expect(target).toEqual(source);
     });
 
-    it("each.remove should delete object property", function() {
+    it("each.remove() should delete object property", function() {
         var source = {a:1,b:new Date(),c:"abc"};
         jstiny.each(source, function(v,k) {
             if (k === "a" || k === "c") {
