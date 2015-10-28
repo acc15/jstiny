@@ -18,6 +18,12 @@ describe("filter", function() {
         expect(jstiny.filter(undefined, null)).toBeUndefined();
     });
 
+    it("filter should filter by null and undefined", function() {
+        //expect(jstiny.filter([1,2,null,3,undefined], [null])).toEqual([1,2,3,undefined]);
+        //expect(jstiny.filter([1,2,3,undefined], [undefined])).toEqual([1,2,null,3]);
+        expect(jstiny.filter([1,2,null,3,undefined], [null,undefined])).toEqual([1,2,3]);
+    });
+
     it("filter should filter by nested properties", function() {
         var v1 = {a: {b: {c: 10}, d: 2}},
             v2 = {a: {b: {c: 1}, d: 2}},
