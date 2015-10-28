@@ -1,17 +1,17 @@
 (function(jstiny) {
 
     jstiny.evaluate = function(obj, expr) {
-        var parts = expr.split(/[\.\[\]]+/g);
-        for (var i=0; i<parts.length; i++) {
-            var key = parts[i];
+        var parts = expr.split(/[\.\[\]]+/g), key, i;
+        for (i=0; i<parts.length; i++) {
+            key = parts[i];
             if (jstiny.isArrayLike(obj)) {
-                key = parseInt(key, 10);
+                obj = obj[ parseInt(key, 10) ];
+            } else if (jstiny.isObject(obj)) {
+                obj = obj[ key ];
             }
-            var val = obj[key];
-            if (val == null) {
-                return val;
+            if (obj === undefined || obj === null) {
+                return obj;
             }
-            obj = val;
         }
         return obj;
     };

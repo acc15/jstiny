@@ -94,7 +94,7 @@ if (window.angular) {
                     break;
                 }
             }
-        } else if (array != null) {
+        } else if (array !== undefined && array !== null) {
             fn(array);
         }
 
@@ -127,17 +127,17 @@ if (window.angular) {
 (function(jstiny) {
 
     jstiny.evaluate = function(obj, expr) {
-        var parts = expr.split(/[\.\[\]]+/g);
-        for (var i=0; i<parts.length; i++) {
-            var key = parts[i];
+        var parts = expr.split(/[\.\[\]]+/g), key, i;
+        for (i=0; i<parts.length; i++) {
+            key = parts[i];
             if (jstiny.isArrayLike(obj)) {
-                key = parseInt(key, 10);
+                obj = obj[ parseInt(key, 10) ];
+            } else if (jstiny.isObject(obj)) {
+                obj = obj[ key ];
             }
-            var val = obj[key];
-            if (val == null) {
-                return val;
+            if (obj === undefined || obj === null) {
+                return obj;
             }
-            obj = val;
         }
         return obj;
     };
@@ -245,7 +245,7 @@ if (window.angular) {
     };
 
     jstiny.hash = function(array, fn, opts) {
-    	var target;
+    	var target, nulls = (opts && opts.nulls);
 
         opts = opts || {};
         fn = jstiny.asFunction(fn);
@@ -253,7 +253,7 @@ if (window.angular) {
 
         jstiny.each(array, function(item, key) {
             var val = fn(item, key);
-            if (val == null) {
+            if (val === undefined || (val === null && !nulls)) {
                 return;
             }
             if (opts.multiple) {
@@ -268,17 +268,15 @@ if (window.angular) {
 })(jstiny);
 (function(jstiny) {
 
-    jstiny.map = function(array, fn) {
-        var result = [];
-
+    jstiny.map = function(array, fn, opts) {
+        var result = [], nulls = (opts !== undefined && opts.nulls);
         fn = jstiny.asFunction(fn);
         if (!jstiny.isArrayLike(array) && !jstiny.isObject(array)) {
             return fn(array);
         }
-
         jstiny.each(array, function(item, key) {
             var mapped = fn(item, key);
-            if (mapped == null) {
+            if (mapped === undefined || (mapped === null && !nulls)) {
                 return;
             }
             result.push(mapped);

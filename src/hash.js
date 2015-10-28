@@ -15,7 +15,7 @@
     };
 
     jstiny.hash = function(array, fn, opts) {
-    	var target;
+    	var target, nulls = (opts && opts.nulls);
 
         opts = opts || {};
         fn = jstiny.asFunction(fn);
@@ -23,7 +23,7 @@
 
         jstiny.each(array, function(item, key) {
             var val = fn(item, key);
-            if (val == null) {
+            if (val === undefined || (val === null && !nulls)) {
                 return;
             }
             if (opts.multiple) {

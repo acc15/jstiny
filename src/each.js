@@ -44,7 +44,7 @@
                     break;
                 }
             }
-        } else if (array != null) {
+        } else if (array !== undefined && array !== null) {
             fn(array);
         }
 
