@@ -1,19 +1,25 @@
 (function(jstiny) {
 
     jstiny.map = function(array, fn, opts) {
-        var result = [], nulls = (opts !== undefined && opts.nulls);
-        fn = jstiny.asFunction(fn);
-        if (!jstiny.isArrayLike(array) && !jstiny.isObject(array)) {
-            return fn(array);
-        }
-        jstiny.each(array, function(item, key) {
-            var mapped = fn(item, key);
-            if (mapped === undefined || (mapped === null && !nulls)) {
-                return;
+        var key, needKey = opts && opts.keys;
+        if (jstiny.isArrayLike(array)) {
+            result = [];
+            for (key = 0; key < array.length; key++) {
+                result.push( fn(array[key], needKey ? key : undefined) );
             }
-            result.push(mapped);
-        });
-        return result;
+            return result;
+        }
+        if (jstiny.isObject(array)) {
+            result = {};
+            for (key in array) {
+                if (!array.hasOwnProperty(key)) {
+                    continue;
+                }
+                result[key] = fn(array[key], needKey ? key : undefined);
+            }
+            return result;
+        }
+        return fn( array );
     };
 
 })(jstiny);

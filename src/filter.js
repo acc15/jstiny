@@ -1,6 +1,6 @@
 (function(jstiny) {
 
-    function isFiltered(filter, obj, key) {
+    function filtered(obj, filter, key) {
         var i, nestedFilter, nestedValue;
 
         if (filter == null) {
@@ -18,7 +18,7 @@
         if (jstiny.isArrayLike(filter)) {
             for (i=0; i<filter.length; i++) {
                 nestedFilter = filter[i];
-                if (isFiltered(nestedFilter, obj, key)) {
+                if (filtered(obj, nestedFilter, i)) {
                     return true;
                 }
             }
@@ -31,7 +31,7 @@
                 }
                 nestedValue = jstiny.evaluate(obj, i);
                 nestedFilter = filter[i];
-                if (!isFiltered(nestedFilter, nestedValue, i)) {
+                if (!filtered(nestedValue, nestedFilter, i)) {
                     return false;
                 }
             }
@@ -40,37 +40,82 @@
         return false;
     }
 
-    jstiny.filter = function(objects, filter, opts) {
-    	var result;
 
-        opts = opts || {};
-        result = opts.modify ? objects : opts.single ? null : [];
-
-        jstiny.each(objects, function(obj, key) {
-            var keep = opts.equals ? obj == filter : isFiltered(filter, obj, key);
-            if (opts.inverse) {
-                keep = !keep;
-            }
-            if (opts.modify) {
-                if (!keep) {
-                    jstiny.each.remove();
-                }
-                return;
-            }
-            if (!keep) {
-                return;
-            }
-            if (opts.single) {
-                result = obj;
-                return jstiny.each.stop();
-            }
-            result.push(obj);
-        });
-        if (opts.single) {
-            return result != null ? result : opts.default != null ? opts.default : null;
+    function matches(obj, filter, key, opts) {
+        var match;
+        if (opts && opts.equals) {
+            match = (obj === filter);
+        } else {
+            match = filtered(obj, filter, key);
         }
-        if (result.length === 0 && opts.default != null) {
-            jstiny.each(opts.default, result.push);
+        return opts && opts.inverse ? !match : match;
+    }
+
+    jstiny.filter = function(objects, filter, opts) {
+    	var result, key, value, found, match, 
+            doSingle = opts && opts.single,
+            doModify = opts && opts.modify;
+        
+        if (jstiny.isArrayLike(objects)) {
+
+            if (!doModify && !doSingle) {
+                result = [];
+            }
+            for (key = 0; key < objects.length; ) {
+
+                value = objects[key];
+                match = matches(value, filter, key, opts);
+
+                if (doSingle && match && !found) {
+                    result = value;
+                    found = true;
+                    if (!doModify) {
+                        break;
+                    }
+                } else if (doModify && !match) {
+                    
+                    Array.prototype.splice.call(objects, key, 1);
+                    continue;
+
+                } else if (!doSingle && !doModify && match) {
+                    result.push( value );
+                }
+
+                ++key;
+            }
+
+        } else if (jstiny.isObject(objects)) {
+
+            if (!doModify && !doSingle) {
+                result = {};
+            }
+            for (key in objects) {
+                if (!objects.hasOwnProperty(key)) {
+                    continue;
+                }
+
+                value = objects[key];
+                match = matches(value, filter, key, opts);
+
+                if (doSingle && match && !found) {
+                    result = value;
+                    found = true;
+                    if (!doModify) {
+                        break;
+                    }
+                } else if (doModify && !match) {
+                    delete objects[key];
+                } else if (!doModify && match) {
+                    result[key] = value;
+                }
+            }
+
+        } else {
+            result = matches(filter, objects, undefined, opts) ? objects : undefined;
+        }
+
+        if ((result === null || result === undefined) && opts && "default" in opts) {
+            result = opts.default;
         }
         return result;
     };

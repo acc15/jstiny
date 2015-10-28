@@ -2,8 +2,7 @@
 
     var iteration = { 
         removed: false, 
-        stopped: false, 
-        result: null 
+        stopped: false
     };
 
     jstiny.each = function(array, fn, def) {
@@ -44,13 +43,16 @@
                     break;
                 }
             }
-        } else if (array !== undefined && array !== null) {
+        } else {
             fn(array);
         }
 
-        if (iteration.result !== undefined) {
+        iteration.removed = false;
+        iteration.stopped = false;
+
+        if ("result" in iteration) {
             result = iteration.result;
-            iteration.result = undefined;
+            delete iteration.result;
             return result;
         } else {
             return def;

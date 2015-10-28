@@ -14,7 +14,8 @@ describe("filter", function() {
     });
 
     it("filter should not fail if params are null", function() {
-        expect(jstiny.filter(null, null)).toEqual([]);
+        expect(jstiny.filter(null, null)).toBeNull();
+        expect(jstiny.filter(undefined, null)).toBeUndefined();
     });
 
     it("filter should filter by nested properties", function() {

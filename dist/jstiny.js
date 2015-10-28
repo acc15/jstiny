@@ -52,8 +52,7 @@ if (window.angular) {
 
     var iteration = { 
         removed: false, 
-        stopped: false, 
-        result: null 
+        stopped: false
     };
 
     jstiny.each = function(array, fn, def) {
@@ -94,13 +93,16 @@ if (window.angular) {
                     break;
                 }
             }
-        } else if (array !== undefined && array !== null) {
+        } else {
             fn(array);
         }
 
-        if (iteration.result !== undefined) {
+        iteration.removed = false;
+        iteration.stopped = false;
+
+        if ("result" in iteration) {
             result = iteration.result;
-            iteration.result = undefined;
+            delete iteration.result;
             return result;
         } else {
             return def;
@@ -152,7 +154,7 @@ if (window.angular) {
 })(jstiny);
 (function(jstiny) {
 
-    function isFiltered(filter, obj, key) {
+    function filtered(obj, filter, key) {
         var i, nestedFilter, nestedValue;
 
         if (filter == null) {
@@ -170,7 +172,7 @@ if (window.angular) {
         if (jstiny.isArrayLike(filter)) {
             for (i=0; i<filter.length; i++) {
                 nestedFilter = filter[i];
-                if (isFiltered(nestedFilter, obj, key)) {
+                if (filtered(obj, nestedFilter, i)) {
                     return true;
                 }
             }
@@ -183,7 +185,7 @@ if (window.angular) {
                 }
                 nestedValue = jstiny.evaluate(obj, i);
                 nestedFilter = filter[i];
-                if (!isFiltered(nestedFilter, nestedValue, i)) {
+                if (!filtered(nestedValue, nestedFilter, i)) {
                     return false;
                 }
             }
@@ -192,37 +194,82 @@ if (window.angular) {
         return false;
     }
 
-    jstiny.filter = function(objects, filter, opts) {
-    	var result;
 
-        opts = opts || {};
-        result = opts.modify ? objects : opts.single ? null : [];
-
-        jstiny.each(objects, function(obj, key) {
-            var keep = opts.equals ? obj == filter : isFiltered(filter, obj, key);
-            if (opts.inverse) {
-                keep = !keep;
-            }
-            if (opts.modify) {
-                if (!keep) {
-                    jstiny.each.remove();
-                }
-                return;
-            }
-            if (!keep) {
-                return;
-            }
-            if (opts.single) {
-                result = obj;
-                return jstiny.each.stop();
-            }
-            result.push(obj);
-        });
-        if (opts.single) {
-            return result != null ? result : opts.default != null ? opts.default : null;
+    function matches(obj, filter, key, opts) {
+        var match;
+        if (opts && opts.equals) {
+            match = (obj === filter);
+        } else {
+            match = filtered(obj, filter, key);
         }
-        if (result.length === 0 && opts.default != null) {
-            jstiny.each(opts.default, result.push);
+        return opts && opts.inverse ? !match : match;
+    }
+
+    jstiny.filter = function(objects, filter, opts) {
+    	var result, key, value, found, match, 
+            doSingle = opts && opts.single,
+            doModify = opts && opts.modify;
+        
+        if (jstiny.isArrayLike(objects)) {
+
+            if (!doModify && !doSingle) {
+                result = [];
+            }
+            for (key = 0; key < objects.length; ) {
+
+                value = objects[key];
+                match = matches(value, filter, key, opts);
+
+                if (doSingle && match && !found) {
+                    result = value;
+                    found = true;
+                    if (!doModify) {
+                        break;
+                    }
+                } else if (doModify && !match) {
+                    
+                    Array.prototype.splice.call(objects, key, 1);
+                    continue;
+
+                } else if (!doSingle && !doModify && match) {
+                    result.push( value );
+                }
+
+                ++key;
+            }
+
+        } else if (jstiny.isObject(objects)) {
+
+            if (!doModify && !doSingle) {
+                result = {};
+            }
+            for (key in objects) {
+                if (!objects.hasOwnProperty(key)) {
+                    continue;
+                }
+
+                value = objects[key];
+                match = matches(value, filter, key, opts);
+
+                if (doSingle && match && !found) {
+                    result = value;
+                    found = true;
+                    if (!doModify) {
+                        break;
+                    }
+                } else if (doModify && !match) {
+                    delete objects[key];
+                } else if (!doModify && match) {
+                    result[key] = value;
+                }
+            }
+
+        } else {
+            result = matches(filter, objects, undefined, opts) ? objects : undefined;
+        }
+
+        if ((result === null || result === undefined) && opts && "default" in opts) {
+            result = opts.default;
         }
         return result;
     };
@@ -269,19 +316,25 @@ if (window.angular) {
 (function(jstiny) {
 
     jstiny.map = function(array, fn, opts) {
-        var result = [], nulls = (opts !== undefined && opts.nulls);
-        fn = jstiny.asFunction(fn);
-        if (!jstiny.isArrayLike(array) && !jstiny.isObject(array)) {
-            return fn(array);
-        }
-        jstiny.each(array, function(item, key) {
-            var mapped = fn(item, key);
-            if (mapped === undefined || (mapped === null && !nulls)) {
-                return;
+        var key, needKey = opts && opts.keys;
+        if (jstiny.isArrayLike(array)) {
+            result = [];
+            for (key = 0; key < array.length; key++) {
+                result.push( fn(array[key], needKey ? key : undefined) );
             }
-            result.push(mapped);
-        });
-        return result;
+            return result;
+        }
+        if (jstiny.isObject(array)) {
+            result = {};
+            for (key in array) {
+                if (!array.hasOwnProperty(key)) {
+                    continue;
+                }
+                result[key] = fn(array[key], needKey ? key : undefined);
+            }
+            return result;
+        }
+        return fn( array );
     };
 
 })(jstiny);
