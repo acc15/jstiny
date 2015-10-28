@@ -19,9 +19,9 @@ describe("filter", function() {
     });
 
     it("filter should filter by null and undefined", function() {
-        //expect(jstiny.filter([1,2,null,3,undefined], [null])).toEqual([1,2,3,undefined]);
-        //expect(jstiny.filter([1,2,3,undefined], [undefined])).toEqual([1,2,null,3]);
-        expect(jstiny.filter([1,2,null,3,undefined], [null,undefined])).toEqual([1,2,3]);
+        expect(jstiny.filter([1,2,null,3,undefined], [null], {inverse:true})).toEqual([1,2,3,undefined]);
+        expect(jstiny.filter([1,2,null,3,undefined], [undefined], {inverse:true})).toEqual([1,2,null,3]);
+        expect(jstiny.filter([1,2,null,3,undefined], [null,undefined], {inverse:true})).toEqual([1,2,3]);
     });
 
     it("filter should filter by nested properties", function() {
@@ -35,7 +35,7 @@ describe("filter", function() {
                 v2
             ],
             expected = [ v1, v2 ];
-        expect(jstiny.filter(data, {a: {b: {c:null}, d:2}})).toEqual(expected);
+        expect(jstiny.filter(data, {a: {b: {c:jstiny.filter.defined }, d:2}})).toEqual(expected);
     });
 
     it("filter should filter by expression", function() {

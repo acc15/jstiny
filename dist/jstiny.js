@@ -156,20 +156,9 @@ if (window.angular) {
 
     function filtered(obj, filter, key) {
         var i, nestedFilter, nestedValue;
-
-        if (filter == null) {
-            return filter !== undefined && obj !== undefined;
-        }
         if (jstiny.isFunction(filter)) {
             return filter(obj, key);
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (obj == filter) {
-            return true;
-        }
-        if (jstiny.isArrayLike(filter)) {
+        } else if (jstiny.isArrayLike(filter)) {
             for (i=0; i<filter.length; i++) {
                 nestedFilter = filter[i];
                 if (filtered(obj, nestedFilter, i)) {
@@ -177,8 +166,7 @@ if (window.angular) {
                 }
             }
             return false;
-        }
-        if (jstiny.isObject(filter)) {
+        } else if (jstiny.isObject(filter)) {
             for (i in filter) {
                 if (!filter.hasOwnProperty(i)) {
                     continue;
@@ -190,8 +178,9 @@ if (window.angular) {
                 }
             }
             return true;
+        } else {
+            return obj === filter;
         }
-        return false;
     }
 
 
@@ -273,6 +262,9 @@ if (window.angular) {
         }
         return result;
     };
+
+    jstiny.filter.any = function() { return true;  };
+    jstiny.filter.defined = function(v) { return v !== undefined; };
 
 })(jstiny);
 (function(jstiny) {
