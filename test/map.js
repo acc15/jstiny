@@ -17,6 +17,10 @@ describe("map", function() {
         expect(target).toEqual({k1:"1",k2:"2",k3:"null",k4:"3",k5:"undefined"});
         expect(keys).toEqual(["k1","k2","k3","k4","k5"]);
     });
+    it("map should map by expression", function() {
+        var source = [{a: {b: {c: 123}}}, {a: {b: {c: 15}}}, {a: {b: {c: "xyz"}}}, {a:"abc"}];
+        expect(jstiny.map(source, "a.b.c")).toEqual([123, 15, "xyz", undefined]);
+    });
 
 
 });

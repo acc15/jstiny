@@ -2,6 +2,8 @@
 
     jstiny.map = function(array, fn, opts) {
         var key, needKey = opts && opts.keys;
+
+        fn = jstiny.asFunction(fn);
         if (jstiny.isArrayLike(array)) {
             result = [];
             for (key = 0; key < array.length; key++) {

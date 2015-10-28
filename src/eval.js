@@ -3,15 +3,17 @@
     jstiny.evaluate = function(obj, expr) {
         var parts = expr.split(/[\.\[\]]+/g), key, i;
         for (i=0; i<parts.length; i++) {
+            if (obj === null || obj === undefined) {
+                return obj;
+            }
             key = parts[i];
             if (jstiny.isArrayLike(obj)) {
                 obj = obj[ parseInt(key, 10) ];
             } else if (jstiny.isObject(obj)) {
                 obj = obj[ key ];
-            }
-            if (obj === undefined || obj === null) {
-                return obj;
-            }
+            } else {
+                return undefined;
+            }            
         }
         return obj;
     };
