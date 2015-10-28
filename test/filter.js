@@ -24,6 +24,11 @@ describe("filter", function() {
         expect(jstiny.filter([1,2,null,3,undefined], [null,undefined], {inverse:true})).toEqual([1,2,3]);
     });
 
+    it("filter should return default value if null or nothing found", function() {
+        expect(jstiny.filter([1,2,null,3,undefined], [5], {default:[5]})).toEqual([5]);
+        expect(jstiny.filter([1,2,null,3,undefined], [5], {single:true, default: 5})).toEqual(5);
+    });
+
     it("filter should filter by nested properties", function() {
         var v1 = {a: {b: {c: 10}, d: 2}},
             v2 = {a: {b: {c: 1}, d: 2}},

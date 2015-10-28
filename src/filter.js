@@ -41,13 +41,13 @@
     }
 
     jstiny.filter = function(objects, filter, opts) {
-    	var result, key, value, found, match, 
-            doSingle = opts && opts.single,
-            doModify = opts && opts.modify;
+    	var result, key, value, found = false, match, 
+            single = opts && opts.single,
+            modify = opts && opts.modify;
         
         if (jstiny.isArrayLike(objects)) {
 
-            if (!doModify && !doSingle) {
+            if (!modify && !single) {
                 result = [];
             }
             for (key = 0; key < objects.length; ) {
@@ -55,27 +55,28 @@
                 value = objects[key];
                 match = matches(value, filter, key, opts);
 
-                if (doSingle && match && !found) {
+                if (single && match && !found) {
                     result = value;
+                }
+                if (match && !found) {
                     found = true;
-                    if (!doModify) {
-                        break;
-                    }
-                } else if (doModify && !match) {
-                    
+                }
+                if (single && match && !modify) {
+                    break;
+                }
+                if (modify && !match) {
                     Array.prototype.splice.call(objects, key, 1);
                     continue;
-
-                } else if (!doSingle && !doModify && match) {
+                }
+                if (!single && !modify && match) {
                     result.push( value );
                 }
-
                 ++key;
             }
 
         } else if (jstiny.isObject(objects)) {
 
-            if (!doModify && !doSingle) {
+            if (!modify && !doSingle) {
                 result = {};
             }
             for (key in objects) {
@@ -86,15 +87,19 @@
                 value = objects[key];
                 match = matches(value, filter, key, opts);
 
-                if (doSingle && match && !found) {
+                if (single && match && !found) {
                     result = value;
+                }
+                if (match && !found) {
                     found = true;
-                    if (!doModify) {
-                        break;
-                    }
-                } else if (doModify && !match) {
+                }
+                if (single && match && !modify) {
+                    break;
+                }
+                if (modify && !match) {
                     delete objects[key];
-                } else if (!doModify && match) {
+                }
+                if (!single && !modify && match) {
                     result[key] = value;
                 }
             }
@@ -103,7 +108,7 @@
             result = matches(filter, objects, undefined, opts) ? objects : undefined;
         }
 
-        if ((result === null || result === undefined) && opts && "default" in opts) {
+        if (!found && opts && "default" in opts) {
             result = opts.default;
         }
         return result;
