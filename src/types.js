@@ -5,7 +5,7 @@
     };
 
     jstiny.isObject = function(obj) {
-        return Object.prototype.toString.call(obj) == "[object Object]";
+        return typeof obj === "object";
     };
 
     jstiny.isArrayLike = function(obj) {
