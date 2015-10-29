@@ -168,33 +168,37 @@ if (window.angular) {
 })(jstiny);
 (function(jstiny) {
 
-    function filtered(obj, filter, key) {
+    function filtered(obj, filter, key, opts) {
         var i, nestedFilter, nestedValue;
+        if ((!opts || !opts.nulls) && filter === null) {
+            return obj !== undefined;
+        } 
         if (jstiny.isFunction(filter)) {
             return filter(obj, key);
-        } else if (jstiny.isArrayLike(filter)) {
+        }
+        if (jstiny.isArrayLike(filter)) {
             for (i=0; i<filter.length; i++) {
                 nestedFilter = filter[i];
-                if (filtered(obj, nestedFilter, i)) {
+                if (filtered(obj, nestedFilter, i, opts)) {
                     return true;
                 }
             }
             return false;
-        } else if (jstiny.isObject(filter)) {
+        }
+        if (jstiny.isObject(filter)) {
             for (i in filter) {
                 if (!filter.hasOwnProperty(i)) {
                     continue;
                 }
                 nestedValue = jstiny.evaluate(obj, i);
                 nestedFilter = filter[i];
-                if (!filtered(nestedValue, nestedFilter, i)) {
+                if (!filtered(nestedValue, nestedFilter, i, opts)) {
                     return false;
                 }
             }
             return true;
-        } else {
-            return obj === filter;
         }
+        return obj === filter;
     }
 
 
@@ -203,7 +207,7 @@ if (window.angular) {
         if (opts && opts.equals) {
             match = (obj === filter);
         } else {
-            match = filtered(obj, filter, key);
+            match = filtered(obj, filter, key, opts);
         }
         return opts && opts.inverse ? !match : match;
     }
@@ -273,7 +277,7 @@ if (window.angular) {
             }
 
         } else {
-            result = matches(filter, objects, undefined, opts) ? objects : undefined;
+            result = matches(objects, filter, undefined, opts) ? objects : undefined;
         }
 
         if (!found && opts && "default" in opts) {

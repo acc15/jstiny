@@ -18,10 +18,15 @@ describe("filter", function() {
         expect(jstiny.filter(undefined, null)).toBeUndefined();
     });
 
+    it("filter null matches any value", function() {
+        expect(jstiny.filter(123, null)).toEqual(123);
+        expect(jstiny.filter([{a:"xyz", b:"zaq"}, {a:"abc",b:"zaq"}, {b:"zaq"}], {a:null,b:"zaq"})).toEqual([{a:"xyz", b:"zaq"}, {a:"abc",b:"zaq"}]);
+    });
+
     it("filter should filter by null and undefined", function() {
-        expect(jstiny.filter([1,2,null,3,undefined], [null], {inverse:true})).toEqual([1,2,3,undefined]);
-        expect(jstiny.filter([1,2,null,3,undefined], [undefined], {inverse:true})).toEqual([1,2,null,3]);
-        expect(jstiny.filter([1,2,null,3,undefined], [null,undefined], {inverse:true})).toEqual([1,2,3]);
+        expect(jstiny.filter([1,2,null,3,undefined], [null], {nulls:true, inverse:true})).toEqual([1,2,3,undefined]);
+        expect(jstiny.filter([1,2,null,3,undefined], [undefined], {nulls:true, inverse:true})).toEqual([1,2,null,3]);
+        expect(jstiny.filter([1,2,null,3,undefined], [null,undefined], {nulls:true, inverse:true})).toEqual([1,2,3]);
     });
 
     it("filter should return default value if null or nothing found", function() {
