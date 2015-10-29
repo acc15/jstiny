@@ -5,7 +5,11 @@
     };
 
     jstiny.isObject = function(obj) {
-        return typeof obj === "object";
+        return Object.prototype.toString.call(obj) === "[object Object]";
+    };
+
+    jstiny.isAnyObject = function(obj) {
+        return obj !== null && typeof obj === "object";
     };
 
     jstiny.isArrayLike = function(obj) {

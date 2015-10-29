@@ -23,15 +23,24 @@ if (window.angular) {
         }
     };
 
-    jstiny.copy = function(source, target) {
-        var k, v;
+    jstiny.copy = function(source, opts) {
+        var k, v, 
+            clear = opts && opts.clear, 
+            transform = opts && opts.transform, 
+            keys = opts && opts.keys, 
+            target = opts && opts.target;
 
-        jstiny.clear(target);
+        if (clear !== false) {
+            jstiny.clear(target);
+        }
         if (jstiny.isArrayLike(source)) {
             if (!jstiny.isArrayLike(target)) {
                 target = [];
             }
-            jstiny.each(source, function(v) {
+            jstiny.each(source, function(v,k) {
+                if (jstiny.isFunction(transform)) {
+                    v = transform(v, keys ? k : undefined);
+                }
                 Array.prototype.push.call(target, v);
             });
             return target;
@@ -40,6 +49,9 @@ if (window.angular) {
                 target = {};
             }
             jstiny.each(source, function(v,k) {
+                if (jstiny.isFunction(transform)) {
+                    v = transform(v, keys ? k : undefined);
+                }
                 target[k] = v;
             });
             return target;
@@ -137,7 +149,7 @@ if (window.angular) {
             key = parts[i];
             if (jstiny.isArrayLike(obj)) {
                 obj = obj[ parseInt(key, 10) ];
-            } else if (jstiny.isObject(obj)) {
+            } else if (jstiny.isAnyObject(obj)) {
                 obj = obj[ key ];
             } else {
                 return undefined;
@@ -360,7 +372,11 @@ if (window.angular) {
     };
 
     jstiny.isObject = function(obj) {
-        return Object.prototype.toString.call(obj) == "[object Object]";
+        return Object.prototype.toString.call(obj) === "[object Object]";
+    };
+
+    jstiny.isAnyObject = function(obj) {
+        return obj !== null && typeof obj === "object";
     };
 
     jstiny.isArrayLike = function(obj) {
@@ -418,7 +434,7 @@ if (window.angular) {
         if (value === undefined) {
             return this.values;
         }
-        jstiny.copy(value, this.values);
+        jstiny.copy(value, {target: this.values });
         return this;
     };
     UrlBuilder.prototype.has = function(name) {

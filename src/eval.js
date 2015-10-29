@@ -9,7 +9,7 @@
             key = parts[i];
             if (jstiny.isArrayLike(obj)) {
                 obj = obj[ parseInt(key, 10) ];
-            } else if (jstiny.isObject(obj)) {
+            } else if (jstiny.isAnyObject(obj)) {
                 obj = obj[ key ];
             } else {
                 return undefined;

@@ -29,7 +29,7 @@
         if (value === undefined) {
             return this.values;
         }
-        jstiny.copy(value, this.values);
+        jstiny.copy(value, {target: this.values });
         return this;
     };
     UrlBuilder.prototype.has = function(name) {

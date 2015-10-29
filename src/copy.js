@@ -8,15 +8,24 @@
         }
     };
 
-    jstiny.copy = function(source, target) {
-        var k, v;
+    jstiny.copy = function(source, opts) {
+        var k, v, 
+            clear = opts && opts.clear, 
+            transform = opts && opts.transform, 
+            keys = opts && opts.keys, 
+            target = opts && opts.target;
 
-        jstiny.clear(target);
+        if (clear !== false) {
+            jstiny.clear(target);
+        }
         if (jstiny.isArrayLike(source)) {
             if (!jstiny.isArrayLike(target)) {
                 target = [];
             }
-            jstiny.each(source, function(v) {
+            jstiny.each(source, function(v,k) {
+                if (jstiny.isFunction(transform)) {
+                    v = transform(v, keys ? k : undefined);
+                }
                 Array.prototype.push.call(target, v);
             });
             return target;
@@ -25,6 +34,9 @@
                 target = {};
             }
             jstiny.each(source, function(v,k) {
+                if (jstiny.isFunction(transform)) {
+                    v = transform(v, keys ? k : undefined);
+                }
                 target[k] = v;
             });
             return target;

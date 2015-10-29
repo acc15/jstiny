@@ -21,6 +21,12 @@ describe("map", function() {
         var source = [{a: {b: {c: 123}}}, {a: {b: {c: 15}}}, {a: {b: {c: "xyz"}}}, {a:"abc"}];
         expect(jstiny.map(source, "a.b.c")).toEqual([123, 15, "xyz", undefined]);
     });
-
+    it("map should correctly map date functions", function() {
+        var dates = [ new Date(), new Date() ],
+            result = jstiny.map(dates, "getTime");
+        expect(result.length).toEqual(2);
+        expect(typeof result[0]).toEqual("function");
+        expect(typeof result[1]).toEqual("function");
+    });
 
 });
