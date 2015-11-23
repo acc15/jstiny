@@ -427,13 +427,6 @@ if (window.angular) {
         }
     }
 
-    UrlBuilder.prototype.path = function(value) {
-        if (value === undefined) {
-            return this.path;
-        }
-        this.path = value;
-        return this;
-    };
     UrlBuilder.prototype.params = function(value) {
         if (value === undefined) {
             return this.values;

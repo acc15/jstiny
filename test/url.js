@@ -74,4 +74,8 @@ describe("url", function() {
         expect(obj.c).toBeUndefined();
     });
 
+    it("url should return correct path", function() {
+        expect(jstiny.url("test/abc?a=1&a=2&b=1&b=2&b=3&c=value").path).toEqual("test/abc");
+    });
+
 });
