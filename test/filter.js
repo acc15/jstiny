@@ -55,4 +55,9 @@ describe("filter", function() {
         expect(jstiny.filter(values, {"x.y.z": ["abc", "cba"]})).toEqual([v1, v2]);
     });
 
+    it("filter should correctly filter hash", function() {
+        var values = {a: {x:15,y:1}, b: {x:16,y:2}, c: {x:17,y:3}};
+        expect(jstiny.filter(values, [{x:15},{x:17}])).toEqual({a: {x:15,y:1}, c:{x:17,y:3}});
+    });
+
 });

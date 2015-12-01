@@ -80,7 +80,7 @@
 
         } else if (jstiny.isObject(objects)) {
 
-            if (!modify && !doSingle) {
+            if (!modify && !single) {
                 result = {};
             }
             for (key in objects) {

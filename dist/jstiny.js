@@ -248,7 +248,7 @@ if (window.angular) {
 
         } else if (jstiny.isObject(objects)) {
 
-            if (!modify && !doSingle) {
+            if (!modify && !single) {
                 result = {};
             }
             for (key in objects) {
@@ -331,13 +331,17 @@ if (window.angular) {
 (function(jstiny) {
 
     jstiny.map = function(array, fn, opts) {
-        var key, needKey = opts && opts.keys;
+        var key, value, needKey = opts && opts.keys, skipNulls = opts && opts.skipNulls, skipUndefined;
 
         fn = jstiny.asFunction(fn);
         if (jstiny.isArrayLike(array)) {
             result = [];
             for (key = 0; key < array.length; key++) {
-                result.push( fn(array[key], needKey ? key : undefined) );
+                value = fn(array[key], needKey ? key : undefined);
+                if ((value === null && skipNulls) || (value === undefined && skipUndefined)) {
+                    continue;
+                }
+                result.push(value);
             }
             return result;
         }
@@ -347,7 +351,11 @@ if (window.angular) {
                 if (!array.hasOwnProperty(key)) {
                     continue;
                 }
-                result[key] = fn(array[key], needKey ? key : undefined);
+                value = fn(array[key], needKey ? key : undefined);
+                if ((value === null && skipNulls) || (value === undefined && skipUndefined)) {
+                    continue;
+                }
+                result[key] = value; 
             }
             return result;
         }
