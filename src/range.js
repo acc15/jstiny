@@ -15,6 +15,9 @@
             this.max = max;
         }
     };
+    Range.prototype.asArray = function() {
+        return [ this.min, this.max ];
+    };
     Range.prototype.diff = function() {
         return this.max - this.min;
     };

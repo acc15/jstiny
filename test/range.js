@@ -59,6 +59,10 @@ describe("range", function() {
         expect(range.diff()).toEqual(90);
     });
 
+    it("range.asArrays returns range as array", function() {
+        var range = jstiny.range(10, 100);
+        expect(range.asArray()).toEqual([10,100]);
+    });
 
 
 });
