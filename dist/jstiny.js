@@ -141,21 +141,7 @@ if (window.angular) {
 (function(jstiny) {
 
     jstiny.evaluate = function(obj, expr) {
-        var parts = expr.split(/[\.\[\]]+/g), key, i;
-        for (i=0; i<parts.length; i++) {
-            if (obj === null || obj === undefined) {
-                return obj;
-            }
-            key = parts[i];
-            if (jstiny.isArrayLike(obj)) {
-                obj = obj[ parseInt(key, 10) ];
-            } else if (jstiny.isAnyObject(obj)) {
-                obj = obj[ key ];
-            } else {
-                return undefined;
-            }            
-        }
-        return obj;
+        return jstiny.expression(expr).get(obj);
     };
 
     jstiny.asFunction = function(fn) {
@@ -163,6 +149,72 @@ if (window.angular) {
             return function(item) { return jstiny.evaluate(item, fn); };
         }
         return fn;
+    };
+
+})(jstiny);
+(function(jstiny) {
+
+    function Expression(expr) {
+        var key, i, index;
+
+        this.keys = expr.split(/[\.\[\]]+/g);
+        for (i = 0; i < this.keys.length; i++) {
+            key = this.keys[i];
+            index = parseInt(key, 10);
+            if (!isNaN(index)) {
+                this.keys[i] = index;
+            }
+        }
+    }
+
+    Expression.NotFound = {};
+
+    Expression.prototype.remove = function(obj) {
+        var i, key, len = this.keys.length;
+        for (i = 0; i < len; i++) {
+            if (obj === null || obj === undefined) {
+                break;
+            }
+            key = this.keys[i];
+            if (i === len - 1) {
+                delete obj[key];
+                return true;
+            }
+            obj = obj[key];
+        }
+        return false;
+    };
+
+    Expression.prototype.exists = function(obj) {
+        return this.get(obj, Expression.NotFound) !== Expression.NotFound;
+    };
+
+    Expression.prototype.get = function(obj, def) {
+        for (var i = 0; i < this.keys.length; i++) {
+            if (obj === null || obj === undefined) {
+                return def;
+            }
+            obj = obj[this.keys[i]];
+        }
+        return obj;
+    };
+    Expression.prototype.set = function(obj, value) {
+        var key, i, len = this.keys.length;
+        for (i = 0; i < len; i++) {
+            key = this.keys[i];
+            if (i === len - 1) {
+                obj[key] = value;
+                return;
+            }
+            if (obj[key] === null || obj[key] === undefined) {
+                obj[key] = typeof this.keys[i + 1] === "number" ? [] : {};
+            }
+            obj = obj[key];
+        }
+    };
+
+    jstiny.expression = function(expr) {
+        return new Expression(expr);
     };
 
 })(jstiny);
@@ -479,37 +531,57 @@ if (window.angular) {
 
 })(jstiny);
 (function(jstiny) {
-	
+
+    jstiny.addQueryParam = function(obj, name, value) {
+        var expr = jstiny.expression(name), current = expr.get(obj);
+        if (current === undefined) {
+            expr.set(obj, value);
+            return;
+        }
+        if (jstiny.isArray(current)) {
+            current.push(value);
+        } else {
+            expr.set(obj, [ current, value ]);
+        }
+    };
+
+    jstiny.parseQueryParams = function(queryString) {
+        var params = queryString.split("&"), i, name, value, result = {};
+        for (i = 0; i < params.length; i++) {
+            pair = params[i].split("=");
+            name = decodeURIComponent(pair[0]);
+            value = pair.length > 1 ? decodeURIComponent(pair[1]) : null;
+            jstiny.addQueryParam(result, name, value);
+        }
+        return result;
+    };
+
+    jstiny.formatQueryParams = function(object) {
+
+
+    };
+
 
     function UrlBuilder(url) {
-        var paramsIndex = url.lastIndexOf("?"), params, pair, i;
-
+        var paramsIndex = url.lastIndexOf("?");
         this.path = paramsIndex < 0 ? url : url.substring(0, paramsIndex);
-        this.values = {};
-
-        if (paramsIndex >= 0) {
-            params = url.substring(paramsIndex+1).split("&");
-            for (i=0;i<params.length;i++) {
-                pair = params[i].split("=");
-                this.add(
-                    decodeURIComponent(pair[0]),
-                    pair.length > 1 ? decodeURIComponent(pair[1]) : null);
-            }
-        }
+        this.queryParams = paramsIndex < 0 ? {} : jstiny.parseQueryParams(url.substring(paramsIndex + 1));
     }
 
-    UrlBuilder.prototype.params = function(value) {
-        if (value === undefined) {
-            return this.values;
+    UrlBuilder.prototype.params = function(query) {
+        if (query === undefined) {
+            return this.queryParams;
         }
-        jstiny.copy(value, {target: this.values });
+
+        this.queryParams = {};
+        jstiny.copy(query, { target: this.queryParams });
         return this;
     };
     UrlBuilder.prototype.has = function(name) {
-        return name in this.values;
+        return jstiny.expression(name).exists(this.queryParams);
     };
     UrlBuilder.prototype.param = function(name) {
-        return name in this.values ? this.values[name] : undefined;
+        return jstiny.expression(name).get(this.queryParams);
     };
     UrlBuilder.prototype.add = function(name, value) {
 
@@ -518,11 +590,11 @@ if (window.angular) {
             jstiny.each(name, function(v,k) { self.add(k,v); });
             return this;
         }
-        if (name in this.values) {
-            current = this.values[name];
+        if (name in this.queryParams) {
+            current = this.queryParams[name];
             if (!jstiny.isArray(current)) {
                 current = [ current ];
-                this.values[name] = current;
+                this.queryParams[name] = current;
             }
             if (value != null) {
                 jstiny.each(value, function(v) {
@@ -532,12 +604,12 @@ if (window.angular) {
                 current.push(value);
             }
         } else {
-            this.values[name] = jstiny.copy(value);
+            this.queryParams[name] = jstiny.copy(value);
         }
         return this;
     };
     UrlBuilder.prototype.remove = function(name) {
-        delete this.values[name];
+        delete this.queryParams[name];
         return this;
     };
 
@@ -555,13 +627,13 @@ if (window.angular) {
     }
 
     UrlBuilder.prototype.get = function(opts) {
-        var keys = Object.keys(this.values),
+        var keys = Object.keys(this.queryParams),
             key, value, i, j, pairs = [];
 
         keys.sort();
-        for (i=0;i<keys.length;i++) {
+        for (i = 0; i < keys.length; i++) {
             key = keys[i];
-            value = this.values[key];
+            value = this.queryParams[key];
             if (jstiny.isArrayLike(value)) {
                 for (j=0; j<value.length; j++) {
                     addPair(key, value[j], pairs, opts);

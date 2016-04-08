@@ -78,4 +78,14 @@ describe("url", function() {
         expect(jstiny.url("test/abc?a=1&a=2&b=1&b=2&b=3&c=value").path).toEqual("test/abc");
     });
 
+    it("url should correctly parse complex structures", function() {
+        var params = jstiny.url("test/xyz?a.n[0].x=10&a.n[0].y=5&a.n[1].x=test&a.m.x=dog&a.m.y=cat").params();
+        expect(params).toEqual({ 
+            a: { 
+                n: [{ x: "10", y: "5" }, { x: "test" }],
+                m: { x: "dog", y: "cat" }
+            }
+        });
+    });
+
 });

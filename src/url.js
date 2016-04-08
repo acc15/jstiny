@@ -1,35 +1,55 @@
 (function(jstiny) {
-	
+
+    jstiny.addQueryParam = function(obj, name, value) {
+        var expr = jstiny.expression(name), current = expr.get(obj);
+        if (current === undefined) {
+            expr.set(obj, value);
+            return;
+        }
+        if (jstiny.isArray(current)) {
+            current.push(value);
+        } else {
+            expr.set(obj, [ current, value ]);
+        }
+    };
+
+    jstiny.parseQueryParams = function(queryString) {
+        var params = queryString.split("&"), i, name, value, result = {};
+        for (i = 0; i < params.length; i++) {
+            pair = params[i].split("=");
+            name = decodeURIComponent(pair[0]);
+            value = pair.length > 1 ? decodeURIComponent(pair[1]) : null;
+            jstiny.addQueryParam(result, name, value);
+        }
+        return result;
+    };
+
+    jstiny.formatQueryParams = function(object) {
+
+
+    };
+
 
     function UrlBuilder(url) {
-        var paramsIndex = url.lastIndexOf("?"), params, pair, i;
-
+        var paramsIndex = url.lastIndexOf("?");
         this.path = paramsIndex < 0 ? url : url.substring(0, paramsIndex);
-        this.values = {};
-
-        if (paramsIndex >= 0) {
-            params = url.substring(paramsIndex+1).split("&");
-            for (i=0;i<params.length;i++) {
-                pair = params[i].split("=");
-                this.add(
-                    decodeURIComponent(pair[0]),
-                    pair.length > 1 ? decodeURIComponent(pair[1]) : null);
-            }
-        }
+        this.queryParams = paramsIndex < 0 ? {} : jstiny.parseQueryParams(url.substring(paramsIndex + 1));
     }
 
-    UrlBuilder.prototype.params = function(value) {
-        if (value === undefined) {
-            return this.values;
+    UrlBuilder.prototype.params = function(query) {
+        if (query === undefined) {
+            return this.queryParams;
         }
-        jstiny.copy(value, {target: this.values });
+
+        this.queryParams = {};
+        jstiny.copy(query, { target: this.queryParams });
         return this;
     };
     UrlBuilder.prototype.has = function(name) {
-        return name in this.values;
+        return jstiny.expression(name).exists(this.queryParams);
     };
     UrlBuilder.prototype.param = function(name) {
-        return name in this.values ? this.values[name] : undefined;
+        return jstiny.expression(name).get(this.queryParams);
     };
     UrlBuilder.prototype.add = function(name, value) {
 
@@ -38,11 +58,11 @@
             jstiny.each(name, function(v,k) { self.add(k,v); });
             return this;
         }
-        if (name in this.values) {
-            current = this.values[name];
+        if (name in this.queryParams) {
+            current = this.queryParams[name];
             if (!jstiny.isArray(current)) {
                 current = [ current ];
-                this.values[name] = current;
+                this.queryParams[name] = current;
             }
             if (value != null) {
                 jstiny.each(value, function(v) {
@@ -52,12 +72,12 @@
                 current.push(value);
             }
         } else {
-            this.values[name] = jstiny.copy(value);
+            this.queryParams[name] = jstiny.copy(value);
         }
         return this;
     };
     UrlBuilder.prototype.remove = function(name) {
-        delete this.values[name];
+        delete this.queryParams[name];
         return this;
     };
 
@@ -75,13 +95,13 @@
     }
 
     UrlBuilder.prototype.get = function(opts) {
-        var keys = Object.keys(this.values),
+        var keys = Object.keys(this.queryParams),
             key, value, i, j, pairs = [];
 
         keys.sort();
-        for (i=0;i<keys.length;i++) {
+        for (i = 0; i < keys.length; i++) {
             key = keys[i];
-            value = this.values[key];
+            value = this.queryParams[key];
             if (jstiny.isArrayLike(value)) {
                 for (j=0; j<value.length; j++) {
                     addPair(key, value[j], pairs, opts);

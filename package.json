@@ -1,6 +1,6 @@
 {
   "name": "jstiny",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "MIT",
   "author": {
     "name": "Vyacheslav Mayorov",
@@ -11,12 +11,12 @@
     "url": "https://github.com/acc15/jstiny.git"
   },
   "devDependencies": {
-    "bower": "^1.5.3",
-    "grunt": "^0.4.5",
-    "grunt-contrib-clean": "~0.6.0",
-    "grunt-contrib-concat": "~0.5.1",
-    "grunt-contrib-jasmine": "~0.9.2",
-    "grunt-contrib-jshint": "~0.10.0",
-    "grunt-contrib-uglify": "~0.9.2"
+    "bower": "^1.7.7",
+    "grunt": "^1.0.0",
+    "grunt-contrib-clean": "~1.0.0",
+    "grunt-contrib-concat": "~1.0.0",
+    "grunt-contrib-jasmine": "~1.0.3",
+    "grunt-contrib-jshint": "~1.0.0",
+    "grunt-contrib-uglify": "~1.0.1"
   }
 }
